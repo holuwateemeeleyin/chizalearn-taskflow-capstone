@@ -1,0 +1,32 @@
+# Secrets and environment variables
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Kubernetes and local secrets
+secrets.yaml
+secrets.yml
+
+# Application dependencies and build output
+node_modules/
+dist/
+build/
+coverage/
+
+# Operating system and editor files
+.DS_Store
+.vscode/
+.idea/
