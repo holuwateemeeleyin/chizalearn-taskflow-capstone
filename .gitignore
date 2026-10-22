@@ -30,3 +30,7 @@ coverage/
 .DS_Store
 .vscode/
 .idea/
+# Kubernetes Secret manifests
+# Kubernetes Secret manifests
+**/*secret*.yaml
+**/*secret*.yml
