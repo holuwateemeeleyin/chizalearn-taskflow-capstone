@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 650px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    main {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+    }
+
+    form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      padding: 10px;
+    }
+
+    button {
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .completed {
+      text-decoration: line-through;
+      color: #777;
+    }
+
+    #message {
+      color: #b42318;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>TaskFlow</h1>
+    <p>A simple place to manage your tasks.</p>
+
+    <form id="task-form">
+      <input id="task-title" type="text"
+             placeholder="Enter a task" required>
+      <button type="submit">Add task</button>
+    </form>
+
+    <p id="message" role="status"></p>
+    <ul id="task-list"></ul>
+  </main>
+
+  <script>
+    const form = document.querySelector("#task-form");
+    const input = document.querySelector("#task-title");
+    const list = document.querySelector("#task-list");
+    const message = document.querySelector("#message");
+
+    async function loadTasks() {
+      try {
+        const response = await fetch("/api/tasks");
+        if (!response.ok) throw new Error("Could not load tasks.");
+
+        const result = await response.json();
+        list.replaceChildren();
+
+        result.data.forEach(task => {
+          const item = document.createElement("li");
+          const title = document.createElement("span");
+          const button = document.createElement("button");
+
+          title.textContent = task.title;
+          if (task.completed) title.classList.add("completed");
+
+          button.textContent = task.completed ? "Completed" : "Complete";
+          button.disabled = task.completed;
+
+          button.addEventListener("click", async () => {
+            try {
+              const update = await fetch(`/api/tasks/${task.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ completed: true })
+              });
+
+              if (!update.ok) throw new Error("Could not update task.");
+              await loadTasks();
+            } catch (error) {
+              message.textContent = error.message;
+            }
+          });
+
+          item.append(title, button);
+          list.appendChild(item);
+        });
+
+        message.textContent = "";
+      } catch (error) {
+        message.textContent = error.message;
+      }
+    }
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      try {
+        const response = await fetch("/api/tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: input.value })
+        });
+
+        if (!response.ok) throw new Error("Could not add task.");
+
+        input.value = "";
+        await loadTasks();
+      } catch (error) {
+        message.textContent = error.message;
+      }
+    });
+
+    loadTasks();
+  </script>
+</body>
+</html>
