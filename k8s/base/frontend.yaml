@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: taskflow-frontend:0.1.0
+          image: timiajiboye/taskflow-frontend:0.1.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
