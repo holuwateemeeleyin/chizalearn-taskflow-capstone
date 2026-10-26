@@ -43,24 +43,24 @@ TaskFlow is a simple task management application built to demonstrate containeri
 
        Local development and Kubernetes testing use OrbStack.
 ```
-
-The diagram represents the intended AWS architecture. The Terraform configuration has been prepared and validated, but the AWS VPC, EKS cluster, and worker nodes have not been deployed.
+The diagram represents the AWS environment provisioned using Terraform. The application runs on Amazon EKS in the `eu-west-1` region. The frontend is exposed through a public AWS LoadBalancer, while the backend uses an internal Kubernetes Service. PostgreSQL uses persistent EBS storage through a PersistentVolumeClaim. The worker nodes run in public subnets to avoid NAT Gateway charges, with security controls applied to restrict access.
 
 ## Project Status
 
 - [x] Initialise Git repository and publish the project to GitHub.
-- [x] Build the TaskFlow frontend and backend.
-- [x] Build and publish Docker images to Docker Hub.
+- [x] Build and publish the frontend and backend Docker images.
 - [x] Keep both application images below 150 MB.
 - [x] Deploy and test locally on Kubernetes using OrbStack.
 - [x] Configure health probes, resource requests, limits, and rolling updates.
 - [x] Test PostgreSQL persistence after pod replacement.
-- [x] Configure Terraform modules for networking and EKS.
-- [x] Configure an encrypted, versioned S3 bucket for remote Terraform state and native state locking.
-- [x] Validate the Terraform configuration and review the plan.
-- [ ] Complete the AWS networking, security, and cost review.
-- [ ] Deploy to AWS if approved.
-- [ ] Capture final evidence and complete deployment documentation.
+- [x] Configure Terraform networking, EKS, IAM roles, and the EBS CSI driver.
+- [x] Configure remote Terraform state in S3 with encryption, versioning, and native state locking.
+- [x] Deploy TaskFlow to AWS EKS and verify application access.
+- [x] Configure AWS-specific Kubernetes resources and versioned image references.
+- [x] Validate Terraform formatting and configuration.
+- [x] Confirm that Terraform reports no infrastructure changes.
+- [ ] Complete final submission evidence and documentation review.
+- [ ] Review AWS costs and clean up infrastructure when approved.
 
 ## Docker Images
 
@@ -68,8 +68,8 @@ The application images are published to Docker Hub.
 
 | Component | Image | Version | Approximate size |
 |---|---|---|---|
-| Frontend | `timiajiboye/taskflow-frontend` | `0.1.0` | 60.7 MB |
-| Backend | `timiajiboye/taskflow-backend` | `0.1.6` | About 98 MB |
+| Frontend | `timiajiboye/taskflow-frontend` | `0.1.1` | 60.7 MB |
+| Backend | `timiajiboye/taskflow-backend` | `0.1.7` | Under 150 MB |
 
 Both application images use non-root runtime users and meet the 150 MB image-size requirement.
 
@@ -117,6 +117,52 @@ PostgreSQL stores task data on a PersistentVolumeClaim. Persistence was tested l
 
 Local database credentials are supplied through a Kubernetes Secret created from the local `.env` file. The `.env` file and any manifests containing real credentials must not be committed to Git.
 
+## AWS Kubernetes Deployment
+
+The AWS deployment uses the Kustomize overlay at `k8s/overlays/aws/`. This overlay reuses the base Kubernetes manifests and applies AWS-specific settings:
+
+- Uses the `gp2` StorageClass for PostgreSQL persistent storage.
+- Exposes the frontend through a public AWS LoadBalancer.
+- Uses versioned Docker Hub images for the frontend and backend.
+- Keeps the backend Service internal to the cluster.
+
+### Deploy the application
+
+Configure `kubectl` to use the `taskflow-dev` EKS cluster in `eu-west-1`:
+
+```bash
+aws eks update-kubeconfig --region eu-west-1 --name taskflow-dev
+```
+
+Ensure the Kubernetes Secret named `taskflow-db` exists in the target namespace before deploying. Do not commit database credentials or Secret manifests containing real credentials.
+
+Apply the AWS overlay:
+
+```bash
+kubectl apply -k k8s/overlays/aws
+```
+
+Check deployment and pod status:
+
+```bash
+kubectl get deployments
+kubectl get pods
+kubectl get services
+kubectl get pvc
+kubectl rollout status deployment/taskflow-backend
+kubectl rollout status deployment/taskflow-frontend
+```
+
+The frontend Service uses type `LoadBalancer`. Retrieve its assigned endpoint with:
+
+```bash
+kubectl get service taskflow-frontend
+```
+
+Open the assigned external address in a browser, using port `8080` if the address does not include a port.
+
+The deployment depends on AWS permissions, a working EKS connection, available storage, and the database Secret being configured correctly. Review the live resource status if a deployment does not become ready.
+
 ## Terraform Infrastructure
 
 Terraform configuration is located in the `terraform/` directory.
@@ -126,7 +172,7 @@ Terraform configuration is located in the `terraform/` directory.
 - `outputs.tf`: network outputs.
 - `backend.tf`: S3 remote state backend and native S3 state locking.
 - `modules/network/`: VPC, public and private subnets, Internet Gateway, and public routing.
-- `modules/cluster/`: EKS control-plane IAM role, EKS cluster, worker-node IAM role, and managed node group.
+- `modules/cluster/`: EKS cluster, cluster and worker-node IAM roles, managed node group, IAM OIDC provider, and the EBS CSI driver add-on with its IAM permissions.
 
 The S3 state bucket is configured with public access blocked, server-side encryption, and versioning. Terraform state can contain sensitive infrastructure information and must not be committed to Git.
 
@@ -142,7 +188,7 @@ terraform -chdir=terraform plan
 
 `terraform plan` previews the proposed changes; it does not deploy infrastructure.
 
-**Important:** The current configuration is not a completed AWS deployment. Review subnet routing, worker-node connectivity, endpoint access, IAM permissions, and expected costs before applying it.
+**Deployment status:** The AWS infrastructure has been deployed and the application is running on EKS. The latest Terraform plan reports no changes. The worker nodes use public subnets to avoid NAT Gateway charges, and the EKS API endpoint is restricted to an allowed public IP address. Review the configuration and AWS costs before making further infrastructure changes.
 
 ## Security and Cost Decisions
 
@@ -170,15 +216,33 @@ The S3 state bucket is separate from the infrastructure managed by the Terraform
 
 ## Testing and Evidence
 
-Record screenshots or logs demonstrating:
+The project was tested locally on Kubernetes and deployed to Amazon EKS.
 
-- Successful frontend and backend builds.
-- Docker image sizes and non-root runtime users.
-- Kubernetes pod readiness and rollout status.
-- Task creation and persistence after PostgreSQL pod replacement.
-- Successful rolling update and rollback.
-- Terraform formatting, validation, and plan output.
-- AWS deployment results, if deployment is approved.
+The following checks have been completed:
+
+- Frontend and backend container images were built and published to Docker Hub.
+- Both application images meet the 150 MB size requirement and use non-root runtime users.
+- Kubernetes deployments use readiness and liveness probes, resource requests and limits, and rolling update settings.
+- PostgreSQL uses persistent storage through a PersistentVolumeClaim.
+- The application was accessed through the AWS frontend LoadBalancer.
+- The backend health endpoint was checked from within the Kubernetes cluster.
+- Terraform formatting and validation completed successfully.
+- The latest Terraform plan reported no infrastructure changes.
+- The AWS Kustomize overlay rendered successfully.
+
+### Evidence to include with the submission
+
+Save genuine screenshots or command output in `docs/screenshots/` and `docs/logs/` as appropriate. Include evidence for:
+
+- Docker image sizes and non-root runtime configuration.
+- Kubernetes deployments, pod readiness, and rollout status.
+- PostgreSQL PVC status and persistence testing.
+- A successful rolling update and rollback.
+- Terraform formatting, validation, and the no-changes plan.
+- The application running through its AWS LoadBalancer.
+- The GitHub repository and final project structure.
+
+Only mark an evidence item complete once its screenshot or log has actually been saved. Do not include credentials, `.env` contents, or other secrets in screenshots or logs.
 
 ## Technology Stack
 
