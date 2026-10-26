@@ -1,0 +1,29 @@
+[0m[1mdata.aws_availability_zones.available: Reading...[0m[0m
+[0m[1mmodule.cluster.aws_iam_role.nodes: Refreshing state... [id=taskflow-dev-node-role][0m
+[0m[1mmodule.cluster.aws_iam_role.cluster: Refreshing state... [id=taskflow-dev-cluster-role][0m
+[0m[1mmodule.network.aws_vpc.this: Refreshing state... [id=vpc-000929a456b5f2b29][0m
+[0m[1mdata.aws_availability_zones.available: Read complete after 0s [id=eu-west-1][0m
+[0m[1mmodule.cluster.aws_iam_role_policy_attachment.nodes_ecr: Refreshing state... [id=taskflow-dev-node-role/arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly][0m
+[0m[1mmodule.cluster.aws_iam_role_policy_attachment.nodes_worker: Refreshing state... [id=taskflow-dev-node-role/arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy][0m
+[0m[1mmodule.cluster.aws_iam_role_policy_attachment.nodes_cni: Refreshing state... [id=taskflow-dev-node-role/arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy][0m
+[0m[1mmodule.cluster.aws_iam_role_policy_attachment.cluster: Refreshing state... [id=taskflow-dev-cluster-role/arn:aws:iam::aws:policy/AmazonEKSClusterPolicy][0m
+[0m[1mmodule.network.aws_internet_gateway.this: Refreshing state... [id=igw-013d697bb96e76389][0m
+[0m[1mmodule.network.aws_subnet.private[0]: Refreshing state... [id=subnet-05497fe36e156e1cb][0m
+[0m[1mmodule.network.aws_subnet.public[0]: Refreshing state... [id=subnet-0a616d2e8028cff82][0m
+[0m[1mmodule.network.aws_subnet.private[1]: Refreshing state... [id=subnet-02a83625d78832d8e][0m
+[0m[1mmodule.network.aws_subnet.public[1]: Refreshing state... [id=subnet-0c3e6d8dc6de6bd4e][0m
+[0m[1mmodule.network.aws_route_table.public: Refreshing state... [id=rtb-0b3ec97ca351fe45f][0m
+[0m[1mmodule.network.aws_route_table_association.public[0]: Refreshing state... [id=rtbassoc-038fe8a18524ec78c][0m
+[0m[1mmodule.network.aws_route_table_association.public[1]: Refreshing state... [id=rtbassoc-09370ad3ef77638ac][0m
+[0m[1mmodule.cluster.aws_eks_cluster.this: Refreshing state... [id=taskflow-dev][0m
+[0m[1mmodule.cluster.aws_iam_openid_connect_provider.this: Refreshing state... [id=arn:aws:iam::575751781774:oidc-provider/oidc.eks.eu-west-1.amazonaws.com/id/3A5F8DCB9132ED72DB8435B146928DC1][0m
+[0m[1mmodule.cluster.aws_eks_node_group.this: Refreshing state... [id=taskflow-dev:taskflow-dev-nodes][0m
+[0m[1mmodule.cluster.aws_iam_role.ebs_csi: Refreshing state... [id=taskflow-dev-ebs-csi-role][0m
+[0m[1mmodule.cluster.aws_iam_role_policy_attachment.ebs_csi: Refreshing state... [id=taskflow-dev-ebs-csi-role/arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy][0m
+[0m[1mmodule.cluster.aws_eks_addon.ebs_csi: Refreshing state... [id=taskflow-dev:aws-ebs-csi-driver][0m
+
+[0m[1m[32mNo changes.[0m[1m Your infrastructure matches the configuration.[0m
+
+[0mTerraform has compared your real infrastructure against your configuration
+and found no differences, so no changes are needed.
+Releasing state lock. This may take a few moments...
