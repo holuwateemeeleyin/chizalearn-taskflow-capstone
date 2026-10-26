@@ -10,7 +10,8 @@ describe("TaskFlow API", () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       status: "healthy",
-      service: "taskflow-backend"
+      service: "taskflow-backend",
+      version: "0.1.6",
     });
   });
 });

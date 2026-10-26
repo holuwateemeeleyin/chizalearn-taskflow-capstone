@@ -31,7 +31,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/image
-        value: timiajiboye/taskflow-backend:0.1.7
+        value: timiajiboye/taskflow-backend:0.1.9
 
   - target:
       group: apps
